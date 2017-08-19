@@ -17,7 +17,7 @@ fi
 git checkout -b $LOCALVERSION
 make olddefconfig
 
-# check 
+# check
 NPROC=$(getconf _NPROCESSORS_ONLN)
 NPROC1=$(($NPROC - 1))
 make -j"$NPROC" C=1 CF="$CF" LOCALVERSION="-$LOCALVERSION" $TARGET
