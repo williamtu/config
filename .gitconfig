@@ -51,6 +51,7 @@
   chainreplyto = false
   smtpserver = smtp.gmail.com
   smtpserverport = 587
+  smtpUser = u9012063@gmail.com
   smtpencryption = tls
   confirm = always
 [fetch]

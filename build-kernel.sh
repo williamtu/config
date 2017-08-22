@@ -5,6 +5,7 @@
 CF="-Wsparse-all -D__CHECKER__ -D__CHECK_ENDIAN__ -Wbitwise"
 LOCALVERSION=$(git branch | sed -n -e "s/* \(.*\)/\1/p" | sed -e "s/_/-/g")
 TARGET=bindeb-pkg
+# or binrpm-pkg
 
 if [ $# -gt 1 ]; then
 	echo "usage: %0 [localversion]"
