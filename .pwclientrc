@@ -1,0 +1,17 @@
+# Sample .pwclientrc file for the netdev project,
+# running on patchwork.ozlabs.org.
+#
+# Just append this file to your existing ~/.pwclientrc
+# If you do not already have a ~/.pwclientrc, then copy this file to
+# ~/.pwclientrc, and uncomment the following two lines:
+# === pwclient ===
+# curl -L https://patchwork.kernel.org/pwclient/
+# ================
+[options]
+default=netdev
+
+[netdev]
+url= https://patchwork.ozlabs.org/xmlrpc/
+
+[openvswitch]
+url= https://patchwork.ozlabs.org/xmlrpc/
