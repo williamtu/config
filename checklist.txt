@@ -1,12 +1,15 @@
 # to send to netdev, for each patch
 
-1. pass ./scripts/checkpatch.pl
+- pass ./scripts/checkpatch.pl
 
-2. pass clang and sparse checker
+- pass clang and sparse checker
 
-3. pass scan-build
+- kernel selftest (ex: make kselftest)
 
-4. --cover-letter needed?
+- pass scan-build
 
-5. CC the right viewers?
+- cover-letter needed?
+
+- CC the right viewers?
+
 
