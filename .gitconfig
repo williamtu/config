@@ -44,6 +44,7 @@
   tc = tag --contains
   list-authors = shortlog -s -n
   flog = log --pretty=fuller
+  sendnn = !git format-patch --cover-letter --subject-prefix="PATCH net-next" -o outgoing
 [push]
   default = current
 [sendemail]

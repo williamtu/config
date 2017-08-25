@@ -1,0 +1,12 @@
+# to send to netdev, for each patch
+
+1. pass ./scripts/checkpatch.pl
+
+2. pass clang and sparse checker
+
+3. pass scan-build
+
+4. --cover-letter needed?
+
+5. CC the right viewers?
+
