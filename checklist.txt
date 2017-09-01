@@ -12,4 +12,5 @@
 
 - CC the right viewers?
 
+- wrap text to 72 char
 
