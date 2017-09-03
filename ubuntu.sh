@@ -26,3 +26,8 @@ make olddefconfig
 make -j8 && make modules_install && make install && reboot 
 
 
+apt-get -y install bison flex
+git clone git://git.kernel.org/pub/scm/linux/kernel/git/shemminger/iproute2.git 
+cd iproute2
+make && make install
+
