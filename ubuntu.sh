@@ -14,7 +14,10 @@ apt-get update && apt-get -y upgrade &&        \
     libncurses-dev               \
     libssl-dev                   \
     wget                         \
-    xz-utils ctags 
+    xz-utils ctags 		 \
+    libcap-dev libelf-dev	 \
+    bison flex
+
 
 # clone this repo
 git clone https://github.com/williamtu/config.git
