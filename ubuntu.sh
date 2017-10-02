@@ -18,6 +18,8 @@ apt-get update && apt-get -y upgrade &&        \
     libcap-dev libelf-dev	 \
     bison flex
 
+# for net-next/tools/
+apt-get install -y gcc-multilib libc6-i386 libc6-dev-i386
 
 # clone this repo
 git clone https://github.com/williamtu/config.git
