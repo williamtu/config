@@ -57,3 +57,7 @@
   confirm = always
 [fetch]
   recurseSubmodules = false
+
+
+# show all versions, lines between (947, 950)
+# git log -L 947,950:net/ipv4/ip_gre.c 
