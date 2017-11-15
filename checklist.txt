@@ -19,3 +19,6 @@
 - reverse christmas tree declaration
 
 - inline in header, non-inline in C file
+
+- is net-next open? http://vger.kernel.org/~davem/net-next.html
+
