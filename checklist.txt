@@ -3,10 +3,12 @@
 - pass ./scripts/checkpatch.pl
 
 - pass clang and sparse checker
+# make C=1 CF="-Wsparse-all -D__CHECKER__ -D__CHECK_ENDIAN__ -Wbitwise" net/ipv6/
 
 - kernel selftest (ex: make kselftest)
 
 - pass scan-build
+# scan-build make net/ipv6/ip6_gre.o
 
 - cover-letter needed?
 
@@ -14,3 +16,6 @@
 
 - wrap text to 72 char
 
+- reverse christmas tree declaration
+
+- inline in header, non-inline in C file
