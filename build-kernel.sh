@@ -23,3 +23,7 @@ NPROC=$(getconf _NPROCESSORS_ONLN)
 NPROC1=$(($NPROC - 1))
 make -j"$NPROC" C=1 CF="$CF" LOCALVERSION="-$LOCALVERSION" $TARGET
 
+#example
+# make C=1 CF="-Wsparse-all -D__CHECKER__ -D__CHECK_ENDIAN__ -Wbitwise" net/ipv6/
+# scan-build make net/ipv6/ip6_gre.o
+
