@@ -19,9 +19,9 @@
 
 set -ex
 
-modprobe ip6_gre
-rmmod ip6_gre || true
-insmod net/ipv6/ip6_gre.ko
+#modprobe ip6_gre
+#rmmod ip6_gre || true
+#insmod net/ipv6/ip6_gre.ko
 
 cleanup() {
 	set +ex
