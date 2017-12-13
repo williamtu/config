@@ -22,3 +22,5 @@
 
 - is net-next open? http://vger.kernel.org/~davem/net-next.html
 
+- use gcov?
+Documentation/dev-tools/gcov.rst
