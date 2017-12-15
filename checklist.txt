@@ -24,3 +24,7 @@
 
 - use gcov?
 Documentation/dev-tools/gcov.rst
+
+- pskb_may_pull() needs to update pointers due to re-allocation
+
+- check all error return value, missing free memory?
