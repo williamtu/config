@@ -12,6 +12,7 @@
   ui = true
 [alias]
   ap = add -p
+  b = branch
   ci = commit
   cm = commit -m
   cms = commit -s -m

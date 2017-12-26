@@ -28,3 +28,11 @@ Documentation/dev-tools/gcov.rst
 - pskb_may_pull() needs to update pointers due to re-allocation
 
 - check all error return value, missing free memory?
+
+- for iproute2. check
+	- header files in uapi
+	- man page update in man8 and in C source code
+	- json format
+		root@ovs-smartnic:~/iproute2# ip -json l
+
+

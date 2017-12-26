@@ -5,8 +5,9 @@ curl -L https://patchwork.kernel.org/pwclient/
 
 # for new machine and kernel
 
-apt-get update && apt-get -y upgrade &&        \
-    apt-get install -y --no-install-recommends \
+apt-get update
+
+apt-get install -y --no-install-recommends \
     bc                           \
     build-essential              \
     git                          \
