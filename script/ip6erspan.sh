@@ -37,7 +37,7 @@ function main() {
 		echo "create IP6 ERSPAN v2 tunnel"
 		ip link add dev ip6erspan11 type ip6erspan seq key 102 \
 			local fc00:100::2 remote fc00:100::1 \
-			erspan_ver 2 erspan_dir 1 erspan_hwid 17
+			erspan_ver 2 erspan_dir egress erspan_hwid 17
 	fi
 	ip addr add dev ip6erspan11 fc00:200::2/96
 	ip addr add dev ip6erspan11 10.10.200.2/24
@@ -54,7 +54,7 @@ function main() {
 		ip netns exec ns0 \
 		ip link add dev ip6erspan00 type ip6erspan seq key 102 \
 			local fc00:100::1 remote fc00:100::2 \
-			erspan_ver 2 erspan_dir 1 erspan_hwid 7
+			erspan_ver 2 erspan_dir egress erspan_hwid 7
 	fi
 
 	ip netns exec ns0 ip addr add dev ip6erspan00 fc00:200::1/96
@@ -72,7 +72,7 @@ main $1
 ping6 -c 1 fc00:100::1 || true
 
 # ping overlay
-ping -c 3 10.10.200.1
+ping -c 300 10.10.200.1
 ping6 -c 3 fc00:200::1
 
 # Ping overlay network from NS0

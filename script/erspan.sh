@@ -44,13 +44,13 @@ function main() {
 		ip netns exec ns0 \
 		ip link add dev $DEV_NS type $TYPE key 102 seq \
 			local 172.16.1.100 remote 172.16.1.200 \
-			erspan 488 erspan_ver 1
+			erspan 262144 erspan_ver 1
 	else
 		echo "create ERSPANv2 tunnel"
 		ip netns exec ns0 \
 		ip link add dev $DEV_NS type $TYPE key 102 seq \
 			local 172.16.1.100 remote 172.16.1.200 \
-			erspan_ver 2 erspan_dir 1 erspan_hwid 7
+			erspan_ver 2 erspan_dir egress erspan_hwid 48
 	fi
 	ip netns exec ns0 ip addr add dev $DEV_NS 10.1.1.100/24
 	ip netns exec ns0 ip link set dev $DEV_NS up
@@ -61,11 +61,11 @@ function main() {
 	if [ "$1" == "v1" ]; then
 		ip link add dev $DEV type $TYPE key 102 seq \
 			local 172.16.1.200 remote 172.16.1.100 \
-			erspan 488 erspan_ver 1
+			erspan 262144 erspan_ver 1
 	else
 		ip link add dev $DEV type $TYPE key 102 seq \
 			local 172.16.1.200 remote 172.16.1.100 \
-			erspan_ver 2 erspan_dir 1 erspan_hwid 7
+			erspan_ver 2 erspan_dir ingress erspan_hwid 48
 	fi
 	ip addr add dev $DEV 10.1.1.200/24
 	ip link set dev $DEV up
@@ -74,7 +74,7 @@ function main() {
 main $1
 
 # Ping from NS0
-ip netns exec ns0 ping -c 3 10.1.1.200
+ip netns exec ns0 ping -c 300 10.1.1.200
 
 # just fit 1514 B
 #ip link set dev erspan11 mtu 1200
