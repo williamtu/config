@@ -51,6 +51,7 @@ NS_EXEC_HEREDOC
 
 ovs-appctl -t ovsdb-server exit
 ovs-appctl -t ovs-vswitchd exit
+ovs-dpctl del-dp ovs-system
 ip netns del at_ns0
 ip netns del at_ns1
 ip link del ovs-p0
