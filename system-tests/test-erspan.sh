@@ -1,6 +1,8 @@
 #!/bin/bash
 # testing datapath - ping over erspan tunnel ...
 
+trap cleanup 0 2 3 9
+
 rm -f /usr/local/etc/openvswitch/conf.db
 ovsdb-tool create /usr/local/etc/openvswitch/conf.db /root/ovs/vswitchd/vswitch.ovsschema
 
@@ -48,12 +50,15 @@ ip link set dev ns_erspan0 mtu 1450  up
 NS_EXEC_HEREDOC
 
 ip netns exec at_ns0 sh << NS_EXEC_HEREDOC
+ping -c 60 10.1.1.100
 ping -q -c 3 -i 0.3 -w 2 172.31.1.100 | grep "transmitted" | sed 's/time.*ms$/time 0ms/'
 NS_EXEC_HEREDOC
 
-ovs-appctl -t ovsdb-server exit
-ovs-appctl -t ovs-vswitchd exit
-ovs-dpctl del-dp ovs-system
-ip netns del at_ns0
-ip link del ovs-p0
-
+function cleanup() {
+    ovs-appctl -t ovsdb-server exit
+    ovs-appctl -t ovs-vswitchd exit
+    ovs-dpctl del-dp ovs-system
+    ip netns del at_ns0
+    ip link del ovs-p0
+}
+cleanup

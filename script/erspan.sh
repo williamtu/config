@@ -50,7 +50,7 @@ function main() {
 		ip netns exec ns0 \
 		ip link add dev $DEV_NS type $TYPE key 102 seq \
 			local 172.16.1.100 remote 172.16.1.200 \
-			erspan_ver 2 erspan_dir egress erspan_hwid 48
+			erspan_ver 2 erspan_dir ingress erspan_hwid 48
 	fi
 	ip netns exec ns0 ip addr add dev $DEV_NS 10.1.1.100/24
 	ip netns exec ns0 ip link set dev $DEV_NS up
