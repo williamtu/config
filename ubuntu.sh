@@ -5,6 +5,11 @@ curl -L https://patchwork.kernel.org/pwclient/
 
 # for new machine and kernel
 
+# timezone setup
+timedatectl set-timezone America/Los_Angeles
+timedatectl
+
+
 apt-get update
 
 apt-get install -y --no-install-recommends \
