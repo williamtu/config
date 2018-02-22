@@ -1,0 +1,14 @@
+diff --git a/tests/ofproto-macros.at b/tests/ofproto-macros.at
+index c8bfe5b5c262..68f47514cf16 100644
+--- a/tests/ofproto-macros.at
++++ b/tests/ofproto-macros.at
+@@ -331,7 +331,8 @@ m4_define([_OVS_VSWITCHD_START],
+    AT_CHECK([ovs-vsctl --no-wait init $2])
+ 
+    dnl Start ovs-vswitchd.
+-   AT_CHECK([ovs-vswitchd $1 --detach --no-chdir --pidfile --log-file -vvconn -vofproto_dpif -vunixctl], [0], [], [stderr])
++   xterm -T ovs-vswitchd -e gdb -x /root/ovs/gdb.txt --args ovs-vswitchd $1 --detach --no-chdir --pidfile --log-file -vvconn -vofproto_dpif -vunixctl
++
+    AT_CAPTURE_FILE([ovs-vswitchd.log])
+    on_exit "kill_ovs_vswitchd `cat ovs-vswitchd.pid`"
+    AT_CHECK([[sed < stderr '
