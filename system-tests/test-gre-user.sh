@@ -41,7 +41,7 @@ NS_EXEC_HEREDOC
 ip addr add dev br-underlay "172.31.1.100/24"
 ip link set dev br-underlay up
 ovs-vsctl add-port br0 at_gre0 -- \
-              set int at_gre0 type=gre options:key=1 options:remote_ip=172.31.1.1
+              set int at_gre0 type=gre options:key=1 options:seq=true options:remote_ip=172.31.1.1
 
 ip addr add dev br0 10.1.1.100/24
 ip link set dev br0 up
@@ -49,7 +49,7 @@ ip link set dev br0 address 00:51:16:1e:14:1f
 ip link set dev br0 mtu 1450
 
 ip netns exec at_ns0 sh << NS_EXEC_HEREDOC
-ip link add dev ns_gretap0 type gretap key 1 remote 172.31.1.100
+ip link add dev ns_gretap0 type gretap seq key 1 remote 172.31.1.100
 ip addr add dev ns_gretap0 10.1.1.1/24
 ip link set dev ns_gretap0 mtu 1450  up
 NS_EXEC_HEREDOC
