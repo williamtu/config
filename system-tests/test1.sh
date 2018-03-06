@@ -1,6 +1,7 @@
 #!/bin/bash
 #  datapath - ping between two ports
 
+set -x /tmp/t
 rm -f /usr/local/etc/openvswitch/conf.db
 ovsdb-tool create /usr/local/etc/openvswitch/conf.db /root/ovs/vswitchd/vswitch.ovsschema
 
