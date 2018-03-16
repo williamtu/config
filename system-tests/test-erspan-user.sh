@@ -15,10 +15,9 @@ ovsdb-server --remote=punix:/usr/local/var/run/openvswitch/db.sock \
 
 ovs-vsctl --no-wait init 
 ovs-vswitchd  --detach --no-chdir --pidfile --log-file=/root/ovs/ovs-vswitchd.log -vvconn -vofproto_dpif -vunixctl --disable-system
+ovs-vsctl -- add-br br0 -- set Bridge br0 protocols=OpenFlow10,OpenFlow11,OpenFlow12,OpenFlow13,OpenFlow14,OpenFlow15 fail-mode=secure datapath_type=netdev
 
-
-ovs-vsctl -- add-br br0 -- set Bridge br0 protocols=OpenFlow10,OpenFlow11,OpenFlow12,OpenFlow13,OpenFlow14,OpenFlow15 fail-mode=secure datapath_type=netdev other-config:hwaddr=ee:3c:c1:1c:a8:49
-ovs-vsctl -- add-br br-underlay -- set Bridge br-underlay protocols=OpenFlow10,OpenFlow11,OpenFlow12,OpenFlow13,OpenFlow14,OpenFlow15 fail-mode=secure datapath_type=netdev other-config:hwaddr=6e:86:ba:0b:d8:4b 
+ovs-vsctl -- add-br br-underlay -- set Bridge br-underlay protocols=OpenFlow10,OpenFlow11,OpenFlow12,OpenFlow13,OpenFlow14,OpenFlow15 fail-mode=secure datapath_type=netdev
 
 ovs-ofctl add-flow br0 "actions=normal"
 ovs-ofctl add-flow br-underlay "actions=normal"

@@ -14,11 +14,11 @@ ovsdb-server --remote=punix:/usr/local/var/run/openvswitch/db.sock \
     --pidfile --detach
 
 ovs-vsctl --no-wait init 
-ovs-vswitchd  --detach --no-chdir --pidfile --log-file=/root/ovs/ovs-vswitchd.log -vvconn -vofproto_dpif -vunixctl
+ovs-vswitchd  --detach --no-chdir --pidfile --log-file=/root/ovs/ovs-vswitchd.log -vvconn -vofproto_dpif -vunixctl --disable-system
+ovs-vsctl -- add-br br0 -- set Bridge br0 protocols=OpenFlow10,OpenFlow11,OpenFlow12,OpenFlow13,OpenFlow14,OpenFlow15 fail-mode=secure datapath_type=netdev 
 
+ovs-vsctl -- add-br br-underlay -- set Bridge br-underlay protocols=OpenFlow10,OpenFlow11,OpenFlow12,OpenFlow13,OpenFlow14,OpenFlow15 fail-mode=secure datapath_type=netdev 
 
-ovs-vsctl -- add-br br0 -- set Bridge br0 protocols=OpenFlow10,OpenFlow11,OpenFlow12,OpenFlow13,OpenFlow14,OpenFlow15 fail-mode=secure   
-ovs-vsctl -- add-br br-underlay -- set Bridge br-underlay protocols=OpenFlow10,OpenFlow11,OpenFlow12,OpenFlow13,OpenFlow14,OpenFlow15 fail-mode=secure   
 ovs-ofctl add-flow br0 "actions=normal"
 ovs-ofctl add-flow br-underlay "actions=normal"
 
@@ -30,7 +30,7 @@ ovs-vsctl add-port br-underlay ovs-p0 -- \
                 set interface ovs-p0 external-ids:iface-id="p0"
 
 ip netns exec at_ns0 sh << NS_EXEC_HEREDOC
-ip addr add dev p0 fc00:100::1/96
+ip addr add dev p0 fc00:100::1/96 nodad
 ip link set dev p0 up
 NS_EXEC_HEREDOC
 
@@ -50,6 +50,9 @@ ip addr add dev ns_erspan0 10.1.1.1/24
 ip link set dev ns_erspan0 mtu 1280  up
 ip link set dev ns_erspan0 mtu 1280
 NS_EXEC_HEREDOC
+sleep 0.5
+ping6 -c 2 fc00:100::1
+ip netns exec at_ns0 ping -c 10000 10.1.1.100
 
 ping 10.1.1.1
 ip netns exec at_ns0 sh << NS_EXEC_HEREDOC
