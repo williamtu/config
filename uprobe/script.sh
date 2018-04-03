@@ -36,6 +36,7 @@ ofproto_flow_mod_learn_finish
  delete_flows_finish
 
 ofproto_flow_mod_learn_refresh
+packet_xlate # packet-out
 "
 
 #symbol in libopenvswitch 
@@ -44,6 +45,36 @@ vconn_send
 vconn_recv
 rconn_send
 rconn_recv
+cls_rule_init_from_minimatch
+counter_miniflow_malloc
+miniflow_alloc
+miniflow_clone
+miniflow_create
+miniflow_equal
+miniflow_equal_flow_in_minimask
+miniflow_equal_in_minimask
+miniflow_expand
+miniflow_extract
+miniflow_get_map_in_range
+miniflow_hash_5tuple
+miniflow_init
+miniflow_malloc_count
+miniflow_malloc_init_coverage
+miniflow_map_init
+minimask_combine
+minimask_create
+minimask_equal
+minimask_expand
+minimask_init
+minimatch_clone
+minimatch_destroy
+minimatch_equal
+minimatch_expand
+minimatch_format
+minimatch_init
+minimatch_matches_flow
+minimatch_move
+minimatch_to_string
 "
 
 #symbol in ovs-vswitchd
