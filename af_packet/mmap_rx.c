@@ -4,6 +4,7 @@
  *  License: GPL, version 2.0
  */
 
+// see psock_tpacket.c in kernel code
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -43,8 +44,8 @@ struct block_desc {
 struct ring {
 	struct iovec *rd;
 	uint8_t *map;
-	struct tpacket_req req;
-//	struct tpacket_req3 req;
+//	struct tpacket_req req;
+	struct tpacket_req3 req;
 };
 
 static unsigned long packets_total = 0, bytes_total = 0;
@@ -90,7 +91,8 @@ static int setup_socket_tx(struct ring *ring, char *netdev)
 		perror("socket");
 		exit(1);
 	}
-	//ret = setsockopt(sock, SOL_PACKET, PACKET_LOSS, (void *) &discard,
+
+	v = TPACKET_V3;
 	err = setsockopt(fd, SOL_PACKET, PACKET_VERSION, &v, sizeof(v));
 	if (err < 0) {
 		perror("tx setsockopt v3");
@@ -105,11 +107,14 @@ static int setup_socket_tx(struct ring *ring, char *netdev)
 	//ring->req.tp_retire_blk_tov = 10;
 	//ring->req.tp_feature_req_word = TP_STATUS_TS_SOFTWARE; // not work
 
-	rd_num = ring->req.tp_frame_nr;
-	flen = ring->req.tp_frame_size;
+	//rd_num = ring->req.tp_frame_nr;
+	//flen = ring->req.tp_frame_size;
+
+	rd_num = ring->req.tp_block_nr;
+	flen = ring->req.tp_block_size;
 
 	ring_verify_layout(ring);
-	__v1_v2_set_packet_loss_discard(fd);
+//	__v1_v2_set_packet_loss_discard(fd);
 
 	err = setsockopt(fd, SOL_PACKET, PACKET_TX_RING, &ring->req,
 			 sizeof(ring->req));
@@ -133,7 +138,6 @@ static int setup_socket_tx(struct ring *ring, char *netdev)
 	assert(ring->rd);
 
 	for (i = 0; i < rd_num; ++i) {
-		//ring->rd[i].iov_base = ring->map + (i * ring->req.tp_block_size);
 		ring->rd[i].iov_base = ring->map + (i * flen);
 		ring->rd[i].iov_len = flen;
 	}
@@ -281,7 +285,9 @@ static void teardown_socket(struct ring *ring, int fd)
 }
 
 struct frame_map {
-	struct tpacket2_hdr tp_h;
+	//struct tpacket2_hdr tp_h;
+	// v3
+	struct tpacket3_hdr tp_h;
 	struct sockaddr_ll s_ll;
 };
 
@@ -330,20 +336,22 @@ int main(int argc, char **argp)
 
 	// prepare to send
 	//rd_num = ring.req.tp_frame_nr;
-	rd_num = 1000;
+	//v3
+	rd_num = ring.req.tp_frame_nr;
 
+	struct frame_map *hdr;
+	hdr = ring.rd[0].iov_base;
 	for (i = 0; i < rd_num; ++i) {
-		struct frame_map *hdr;
 
-		hdr = ring.rd[i].iov_base;
+		//while(!v2_tx_kernel_ready(&hdr->tp_h));
 
-		while(!v2_tx_kernel_ready(&hdr->tp_h));
-
-		out = ((uint8_t *)hdr) + TPACKET2_HDRLEN
+		out = ((uint8_t *)hdr) + TPACKET3_HDRLEN
 			- sizeof(struct sockaddr_ll);
 
 		hdr->tp_h.tp_snaplen = 60;
 		hdr->tp_h.tp_len = 60;
+		// v3
+		hdr->tp_h.tp_next_offset = 0;
 
 		packet[0] = 0xe0 + i;
 		memcpy(out, packet, sizeof(packet));
@@ -353,6 +361,7 @@ int main(int argc, char **argp)
 
 		//poll(&pfd, 1, 1);
 		printf("setup %i packet at %p\n", i, hdr);
+		hdr = (struct frame_map *)((char *)hdr + ring.req.tp_frame_size);
 	}
 
 	//err = sendto(fd, NULL, 0, MSG_DONTWAIT, NULL, 0);
