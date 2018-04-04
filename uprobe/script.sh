@@ -35,8 +35,14 @@ ofproto_flow_mod_learn_finish
  modify_flows_finish
  delete_flows_finish
 
-ofproto_flow_mod_learn_refresh
 packet_xlate 
+next_learn_with_delete
+ofproto_flow_mod_init_for_learn
+ofproto_flow_mod_learn_refresh
+rev_mac_learning_count
+rev_mac_learning_init_coverage
+xlate_learn_action
+xlate_mac_learning_update
 "
 
 #symbol in libopenvswitch 
@@ -77,6 +83,37 @@ minimatch_init
 minimatch_matches_flow
 minimatch_move
 minimatch_to_string
+classifier_count
+classifier_destroy
+classifier_find_match_exactly
+classifier_find_rule_exactly
+classifier_init
+classifier_insert
+classifier_is_empty
+classifier_lookup
+classifier_lookup__
+classifier_remove
+classifier_replace
+classifier_rule_overlaps
+classifier_set_prefix_fields
+mac_learning_create
+mac_learning_expire
+mac_learning_expired_count
+mac_learning_expired_init_coverage
+mac_learning_flush
+mac_learning_insert
+mac_learning_learned_count
+mac_learning_learned_init_coverage
+mac_learning_lookup
+mac_learning_may_learn
+mac_learning_ref
+mac_learning_run
+mac_learning_set_flood_vlans
+mac_learning_set_idle_time
+mac_learning_set_max_entries
+mac_learning_unref
+mac_learning_update
+mac_learning_wait
 "
 
 #symbol in ovs-vswitchd
