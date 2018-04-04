@@ -36,17 +36,19 @@ ofproto_flow_mod_learn_finish
  delete_flows_finish
 
 ofproto_flow_mod_learn_refresh
-packet_xlate # packet-out
+packet_xlate 
 "
 
 #symbol in libopenvswitch 
 ovs_func="
+xmalloc
+xcalloc
+xrealloc
 vconn_send
 vconn_recv
 rconn_send
 rconn_recv
 cls_rule_init_from_minimatch
-counter_miniflow_malloc
 miniflow_alloc
 miniflow_clone
 miniflow_create
@@ -80,19 +82,27 @@ minimatch_to_string
 #symbol in ovs-vswitchd
 vswitch_func="
 bridge_run
+bridge_run__
+bridge_exit
+bridge_get_memory_usage
+bridge_init
+bridge_wait
 "
 
 # install debuginfo
 LIBOVSDBG=/usr/lib/debug/usr/lib64/libopenvswitch.so.debug
+LIBOVS=/usr/lib64/libopenvswitch-2.8.so.0
 LIBOFPDBG=/usr/lib/debug/usr/lib64/libofproto.so.debug
+LIBOFP=/usr/lib64/libofproto-2.8.so.0
 VSWITCHDBG=/usr/lib/debug/usr/sbin/ovs-vswitchd.debug
+VSWITCH=/usr/sbin/ovs-vswitchd
 PERF=perf
 
 uprobe_libofproto() {
     echo "ADD OFPROTO Uprobe"
     for func in $ofproto_func;
     do
-        $PERF probe -x $LIBOFPDBG $func
+        $PERF probe -k $LIBOFPDBG -x $LIBOFP $func
     done
     echo 1 > /sys/kernel/debug/tracing/events/probe_libofproto/enable
 }
@@ -101,7 +111,7 @@ uprobe_libopenvswitch() {
     echo "ADD LIBOPENVSWITCH Uprobe"
     for func in $ovs_func;
     do
-        $PERF probe -x $LIBOVSDBG $func
+        $PERF probe -k $LIBOVSDBG -x $LIBOVS $func
     done
     echo 1 > /sys/kernel/debug/tracing/events/probe_libopenvswitch/enable
 }
@@ -110,7 +120,7 @@ uprobe_vswitchd() {
     echo "ADD VSWITCHD Uprobe"
     for func in $vswitch_func;
     do
-        $PERF probe -x $VSWITCHDBG $func
+        $PERF probe -k $VSWITCHDBG -x $VSWITCH $func
     done
     echo 1 > /sys/kernel/debug/tracing/events/probe_ovs/enable
 }
@@ -130,7 +140,7 @@ uprobe_disable
 uprobe_libofproto
 uprobe_libopenvswitch
 uprobe_vswitchd
-uprobe_enable
+#uprobe_enable
 
 # cat /sys/kernel/debug/tracing/uprobe_profile
 
