@@ -73,15 +73,16 @@
 
 #define NB_MBUF   8192
 
-#define MAX_PKT_BURST 4 
+#define MAX_PKT_BURST 32
 #define PRINT_STATS_US 1000000
-static volatile bool force_quit;                                                
+#define TX_QUEUE 4 /* configured tx queue */
+static volatile bool force_quit;
 
 /*
  * Configurable number of RX/TX ring descriptors
  */
-#define RTE_TEST_RX_DESC_DEFAULT 64 
-#define RTE_TEST_TX_DESC_DEFAULT 64
+#define RTE_TEST_RX_DESC_DEFAULT 1024 
+#define RTE_TEST_TX_DESC_DEFAULT 1024
 static uint16_t nb_rxd = RTE_TEST_RX_DESC_DEFAULT;
 static uint16_t nb_txd = RTE_TEST_TX_DESC_DEFAULT;
 
@@ -92,6 +93,7 @@ static const struct rte_eth_conf port_conf = {
 	},
 	.txmode = {
 		.mq_mode = ETH_MQ_TX_NONE,
+		//.mq_mode = ETH_MQ_TX_VMDQ_ONLY,
 	},
 };
 struct rte_mempool * l2fwd_pktmbuf_pool = NULL;
@@ -101,15 +103,19 @@ const char packet[] =
 "\x00\x02\x03\x04\x05\x06\xa0\x36\x9f\x0c\x94\xe8\x08\x00\x45\x10\x00\x2e\x00\x00\x40\x00\x40\x11\x26\xad\x0a\x00\x00\x01\x0a\x01\x00\x01\x00\x00\x00\x01\x00\x1a\x00\x00\x6e\x65\x74\x6d\x61\x70\x20\x70\x6b\x74\x2d\x67\x65\x6e\x20\x44\x49\x52";
 
 static int
-tx(__attribute__((unused)) void *dummy)
+tx(void *arg)
 {
 	const uint64_t drain_tsc = (rte_get_tsc_hz() + US_PER_S - 1) / US_PER_S * PRINT_STATS_US;
 	uint64_t prev_tsc = rte_rdtsc();
 	const uint8_t port_id = 0; //XXX
 	uint64_t pps = 0;
 	unsigned long long seq = 0;
+	unsigned lcore_id;
+	unsigned queue_id;
 
-	printf("TXCORE\n");
+        lcore_id = rte_lcore_id();
+	queue_id = *(unsigned *)arg;
+	printf("TXCORE id %d queue id %d\n", lcore_id, queue_id);
 
 	for (;;) {
 		struct rte_mbuf *pkts[MAX_PKT_BURST];
@@ -143,7 +149,7 @@ tx(__attribute__((unused)) void *dummy)
 			data[0x25] = ((((seq >> 15) & 0x7F)) << 1) | 1;
 		}
 
-		nb_tx = rte_eth_tx_burst(port_id, (uint16_t) 0, pkts, (uint16_t) MAX_PKT_BURST);
+		nb_tx = rte_eth_tx_burst(port_id, (uint16_t)queue_id, pkts, (uint16_t) MAX_PKT_BURST);
 		pps += nb_tx;
 		for (i = nb_tx; i < MAX_PKT_BURST; i++) {
 			rte_pktmbuf_free(pkts[i]);
@@ -160,8 +166,11 @@ rx(__attribute__((unused)) void *dummy)
 	uint64_t prev_tsc = rte_rdtsc();
 	const uint8_t port_id = 0; //XXX
 	uint64_t pps = 0;
+	unsigned lcore_id;
 
-	printf("RXCORE\n");
+        lcore_id = rte_lcore_id();
+
+	printf("RXCORE id %d\n", lcore_id);
 	
 	for (;;) {
 		struct rte_mbuf *pkts[MAX_PKT_BURST];
@@ -190,24 +199,26 @@ rx(__attribute__((unused)) void *dummy)
 	return 0;
 }
 
-static void                                                                     
-signal_handler(int signum)                                                      
-{                                                                               
-        if (signum == SIGINT || signum == SIGTERM) {                            
-                printf("\n\nSignal %d received, preparing to exit...\n",        
-                                signum);                                        
-                force_quit = true;                                              
-        }                                                                       
+static void
+signal_handler(int signum)
+{
+        if (signum == SIGINT || signum == SIGTERM) {
+                printf("\n\nSignal %d received, preparing to exit...\n",
+                                signum);
+                force_quit = true;
+        }
 }
-        
+
 int
 main(int argc, char **argv)
 {
-	int ret;
+	int ret, i;
 	uint8_t nb_ports;
 	uint8_t portid;
-	unsigned long long new_microflows;
-                                    
+	unsigned lcore_id;
+	unsigned tx_queue_id;
+	//unsigned long long new_microflows;
+
 	/* init EAL */
 	ret = rte_eal_init(argc, argv);
 	if (ret < 0)
@@ -219,7 +230,7 @@ main(int argc, char **argv)
 		rte_exit(EXIT_FAILURE, "Please specify number of microflows\n");
 	}
 
-        force_quit = false;                                                     
+        force_quit = false;
         signal(SIGINT, signal_handler);
 
 	microflows = strtoull(argv[1], NULL, 0);
@@ -242,14 +253,15 @@ main(int argc, char **argv)
 	
 	rte_log_set_global_level(RTE_LOG_DEBUG);
 
-
-
+  	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
+		printf("available lcore %u\n ", lcore_id);
+	}
 	/* Initialise each port */
 	for (portid = 0; portid < 2; portid++) {
 		/* init port */
 		printf("Initializing port %u... ", (unsigned) portid);
 		fflush(stdout);
-		ret = rte_eth_dev_configure(portid, 1, 1, &port_conf);
+		ret = rte_eth_dev_configure(portid, 1, TX_QUEUE, &port_conf);
 		if (ret < 0)
 			rte_exit(EXIT_FAILURE, "Cannot configure device: err=%d, port=%u\n",
 				  ret, (unsigned) portid);
@@ -266,13 +278,15 @@ main(int argc, char **argv)
 
 		/* init one TX queue on each port */
 		fflush(stdout);
-		ret = rte_eth_tx_queue_setup(portid, 0, nb_txd,
-				//rte_eth_dev_socket_id(portid),
-				0,
-				NULL);
-		if (ret < 0)
-			rte_exit(EXIT_FAILURE, "rte_eth_tx_queue_setup:err=%d, port=%u\n",
-				ret, (unsigned) portid);
+		for (i = 0; i < TX_QUEUE; i++) {
+			ret = rte_eth_tx_queue_setup(portid, i, nb_txd,
+					rte_eth_dev_socket_id(portid),
+					NULL);
+			if (ret < 0)
+				rte_exit(EXIT_FAILURE, "rte_eth_tx_queue_setup:err=%d, port=%u\n",
+					ret, (unsigned) portid);
+
+		}
 
 		/* Start device */
 		ret = rte_eth_dev_start(portid);
@@ -292,30 +306,33 @@ main(int argc, char **argv)
 	if (ret)
 		rte_exit(EXIT_FAILURE, "rx launch fail\n");
 
-	printf("LAUNCHING TX\n");
-	ret = rte_eal_remote_launch(tx, NULL, 4);
-	if (ret)
-		rte_exit(EXIT_FAILURE, "tx launch fail\n");
+	for (tx_queue_id = 0; tx_queue_id < TX_QUEUE; tx_queue_id++) {
+		printf("LAUNCHING TX at queue %d\n", tx_queue_id);
+		ret = rte_eal_remote_launch(tx, (void *)&tx_queue_id, 3 + tx_queue_id);
+		if (ret)
+			rte_exit(EXIT_FAILURE, "tx launch fail\n");
+	}
 
 	char *line = NULL;
 	size_t n;
 
 	while (getline(&line, &n, stdin) >= 0) {
 		errno = 0;
-		new_microflows = strtoull(line, NULL, 0);
+//		new_microflows = strtoull(line, NULL, 0);
 		free(line);
 		line = NULL;
 	
 		if (force_quit)
 			break;
 	
+/*
 		if (errno != ERANGE) {
 			printf("new_microflows %llu\n", new_microflows);
 			// XXX this should be atomic
 			microflows = new_microflows;
 		}
+*/
 	}
-
 	for (portid = 0; portid < nb_ports; portid++) {
 		printf("close port id %d\n", portid);
 		rte_eth_dev_stop(portid);
