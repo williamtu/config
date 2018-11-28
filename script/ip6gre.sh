@@ -69,7 +69,7 @@ main
 ping6 -c 3 fc00:100::1
 
 # Ping overlay network from NS0
-ping6 -c 3 fc00:200::1 
+ping6 -c 300 fc00:200::1 
 ping -c 3 10.10.200.1
 
 # ip -6 route show
