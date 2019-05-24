@@ -217,6 +217,11 @@ main(int argc, char **argv)
 	uint8_t portid;
 	unsigned lcore_id;
 	unsigned tx_queue_id;
+#if 0
+    uint16_t vportid;
+    char vdev_name[] = "net_af_xdp";
+    char vdev_args[] = "iface=enp2s0,queue=0";
+#endif
 	//unsigned long long new_microflows;
 
 	/* init EAL */
@@ -240,7 +245,18 @@ main(int argc, char **argv)
 		0, RTE_MBUF_DEFAULT_BUF_SIZE, rte_socket_id());
 	if (l2fwd_pktmbuf_pool == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot init mbuf pool\n");
+#if 0
+    if (rte_eal_hotplug_add("vdev", vdev_name, vdev_args) < 0) {
+		rte_exit(EXIT_FAILURE, "Cannot hotplug device\n");
+    }
 
+    if (rte_eth_dev_get_port_by_name(vdev_name, &vportid) != 0) {
+        rte_eal_hotplug_remove("vdev", vdev_name);
+		rte_exit(EXIT_FAILURE, "Cannot hotplug device\n");
+    }
+
+    printf("vport id %d\n", vportid);
+#endif
 	nb_ports = rte_eth_dev_count_avail();
 	if (nb_ports == 0)
 		rte_exit(EXIT_FAILURE, "No Ethernet ports - bye\n");
