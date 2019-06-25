@@ -35,4 +35,11 @@ Documentation/dev-tools/gcov.rst
 	- json format
 		root@ovs-smartnic:~/iproute2# ip -json l
 
+# send to OVS
+- address sanitizer
+example::
+    $ ./configure CFLAGS="-g -O2 -fsanitize=address -fno-omit-frame-pointer -fno-common"
+    $ # use -v to print
+    $ make check-afxdp TESTSUITEFLAGS='-v 52'
+
 
