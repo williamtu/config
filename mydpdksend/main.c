@@ -269,7 +269,7 @@ main(int argc, char **argv)
 	
 	rte_log_set_global_level(RTE_LOG_DEBUG);
 
-  	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
+  	RTE_LCORE_FOREACH_WORKER(lcore_id) {
 		printf("available lcore %u\n ", lcore_id);
 	}
 	/* Initialise each port */
