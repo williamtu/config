@@ -75,7 +75,7 @@
 
 #define MAX_PKT_BURST 32
 #define PRINT_STATS_US 1000000
-#define TX_QUEUE 4 /* configured tx queue */
+#define TX_QUEUE 2 /* configured tx queue */
 static volatile bool force_quit;
 
 /*
@@ -269,11 +269,11 @@ main(int argc, char **argv)
 	
 	rte_log_set_global_level(RTE_LOG_DEBUG);
 
-  	RTE_LCORE_FOREACH_WORKER(lcore_id) {
+	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
 		printf("available lcore %u\n ", lcore_id);
 	}
 	/* Initialise each port */
-	for (portid = 0; portid < 2; portid++) {
+	for (portid = 0; portid < 1; portid++) {
 		/* init port */
 		printf("Initializing port %u... ", (unsigned) portid);
 		fflush(stdout);

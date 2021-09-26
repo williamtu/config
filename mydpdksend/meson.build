@@ -18,7 +18,8 @@ use_dpdk_pkgconfig = true
 dpdk_lib_deps = []
 
 if use_dpdk_pkgconfig
-  dpdk_lib_deps = dependency('libdpdk', required : true, static: true) 
+# work with v20.02 DPDK
+  dpdk_lib_deps = dependency('libdpdk', required : true, static: false) 
 endif
 
 executable('mypktgen', 'main.c',
