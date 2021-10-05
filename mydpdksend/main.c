@@ -37,16 +37,14 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <sys/types.h>
-#include <sys/queue.h>
-#include <netinet/in.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <ctype.h>
 #include <errno.h>
-#include <getopt.h>
 #include <signal.h>
 #include <stdbool.h>
 
+#include <rte_os.h>
 #include <rte_common.h>
 #include <rte_log.h>
 #include <rte_memory.h>
@@ -224,6 +222,7 @@ main(int argc, char **argv)
 #endif
 	//unsigned long long new_microflows;
 
+    	printf("Hello\n");
 	/* init EAL */
 	ret = rte_eal_init(argc, argv);
 	if (ret < 0)
@@ -269,7 +268,7 @@ main(int argc, char **argv)
 	
 	rte_log_set_global_level(RTE_LOG_DEBUG);
 
-	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
+	RTE_LCORE_FOREACH_WORKER(lcore_id) {
 		printf("available lcore %u\n ", lcore_id);
 	}
 	/* Initialise each port */
@@ -332,10 +331,11 @@ main(int argc, char **argv)
 	char *line = NULL;
 	size_t n;
 
-	while (getline(&line, &n, stdin) >= 0) {
+//	while (getline(&line, &n, stdin) >= 0) {
+	while (true) {	
 		errno = 0;
 //		new_microflows = strtoull(line, NULL, 0);
-		free(line);
+//		free(line);
 		line = NULL;
 	
 		if (force_quit)
