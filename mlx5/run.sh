@@ -5,8 +5,8 @@ echo s > /proc/sysrq-trigger
 sync /workspace/net-next-c86/*
 set -e
 
+old_setup() {
 PF1=enp8s0f0
-
 VFREP1=enp8s0f0_0
 VFREP2=enp8s0f0_1
 VFREP3=enp8s0f0_2
@@ -15,6 +15,14 @@ VF1=eth2
 VF2=eth3
 VF3=eth4
 VF4=eth5
+}
+
+PF1=eth2
+VFREP1=eth4
+VFREP2=eth5
+VF1=eth6
+VF2=eth7
+
 NS1=ns1
 NS2=ns2
 NS3=ns3
@@ -74,6 +82,7 @@ disable_rmp()
 add_vf()
 {
 	echo 2 > /sys/class/net/$PF1/device/sriov_numvfs
+python2 /usr/bin/mlx_fs_dump -d 0000:08:00.0 > /root/net-next/fdb.txt
 }
 del_vf()
 {
@@ -111,7 +120,7 @@ setup_br_and_test()
 cleanup_br()
 {
 	ip link set dev br1 down; brctl delbr br1
-	ip netns del $NS1 
+	ip netns del $NS1
 	ip netns del $NS2
 }
 
@@ -207,7 +216,7 @@ SF2=eth3
 cleanup_br_sf()
 {
 	ip link set dev br1 down; brctl delbr br1
-	ip netns del $NS1 
+	ip netns del $NS1
 	ip netns del $NS2
 }
 
@@ -233,24 +242,24 @@ test_no_rmp_sf()
 # udev file /etc/udev/rules.d/83-mlnx-sf-name.rules
 # ethtool -g eth2
 
-make -j8 -C . M=drivers/net/ethernet/mellanox/mlx5/core/
+make -j12 -C . M=drivers/net/ethernet/mellanox/mlx5/core/
+#make -j12 -C . M=drivers/infiniband/hw/mlx5
 set +e
 rmmod mlx5_ib
 rmmod mlx5_core
+#insmode drivers/infiniband/hw/mlx5/mlx5_ib.ko
 insmod drivers/net/ethernet/mellanox/mlx5/core/mlx5_core.ko
 
 #insmod /root/mlx5_core.ko; echo "LOADING Default MLX5"
-#devlink dev param set pci/0000:08:00.0 name flow_steering_mode value dmfs cmode runtime
-#devlink dev eswitch set pci/0000:08:00.0 mode switchdev
+devlink dev param set pci/0000:08:00.0 name flow_steering_mode value dmfs cmode runtime
+devlink dev eswitch set pci/0000:08:00.0 mode switchdev
+#ethtool -K eth2 ntuple on
+#echo 4 > /sys/class/net/eth2/device/sriov_numvfs
+#python2 /usr/bin/mlx_fs_dump -d 0000:08:00.0 > /root/net-next/fdb.txt
 
-
-
-test_rmp_sf
-#exit
 #test_no_rmp_sf
 #exit
 #test_rmp
-exit
 test_no_rmp
 exit
 test_no_rmp_sf
@@ -260,7 +269,7 @@ exit
 
 # WIP area
 devlink dev param set pci/0000:08:00.1 name esw_rmp_size value 2048 cmode driverinit
-devlink dev reload pci/0000:08:00.1 
+devlink dev reload pci/0000:08:00.1
 devlink dev param show
 
 devlink dev param set pci/0000:08:00.0 name flow_steering_mode value dmfs cmode runtime
