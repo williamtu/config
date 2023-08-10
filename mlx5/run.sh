@@ -1,8 +1,7 @@
 #!/bin/bash
 set -x
-echo 1 > /sys/module/mlx5_core/parameters/debug_mask
+#echo 1 > /sys/module/mlx5_core/parameters/debug_mask
 echo s > /proc/sysrq-trigger
-sync /workspace/net-next-c86/*
 set -e
 
 old_setup() {
@@ -43,30 +42,34 @@ setup_dev_ns()
 	ip netns add $ns
 	ip link set dev $vfdev netns $ns
 	ip netns exec $ns ifconfig $vfdev ${ip}/24 up
-	ip netns exec $ns iperf -s -D
+	ip netns exec $ns iperf -s -u  -D
 }
 
 setup_ovs()
 {
 #	devlink dev eswitch set pci/0000:08:00.0 mode switchdev
-	echo 4 > /sys/class/net/$PF1/device/sriov_numvfs
-#/usr/share/openvswitch/scripts/ovs-ctl stop
+	/usr/share/openvswitch/scripts/ovs-ctl stop
+	rm -f /etc/openvswitch/conf.db
+	echo 2 > /sys/class/net/$PF1/device/sriov_numvfs
+	python2 /usr/bin/mlx_fs_dump -d 0000:08:00.0 > /root/net-next/fdb.txt
 
-	ovs-vsctl add-br br0
-	ovs-vsctl add-port br0 $VFREP1
-	ovs-vsctl add-port br0 $VFREP2
-	ovs-vsctl add-port br0 $VFREP3
-	ovs-vsctl add-port br0 $VFREP4
+	/usr/share/openvswitch/scripts/ovs-ctl start
+#	ovs-vsctl set Open_vSwitch . other_config:hw-offload=false
+
+
+	ovs-vsctl add-br ovsbr0
+	ovs-vsctl add-port ovsbr0 $VFREP1
+	ovs-vsctl add-port ovsbr0 $VFREP2
 
 	ip link set dev $VFREP1 up
 	ip link set dev $VFREP2 up
-	ip link set dev $VFREP3 up
-	ip link set dev $VFREP4 up
 
 	setup_dev_ns $NS1 $VF1 192.167.111.1
 	setup_dev_ns $NS2 $VF2 192.167.111.2
-	setup_dev_ns $NS3 $VF3 192.167.111.3
-	setup_dev_ns $NS4 $VF4 192.167.111.4
+
+	ip netns exec $NS1 ping -i .2 -c30 192.167.111.2
+	ip netns exec $NS2 ping -i .2 -c30 192.167.111.1
+	ip netns exec $NS1 iperf -u -b10M -c 192.167.111.2 -t3 -i1
 }
 
 enable_rmp()
@@ -82,7 +85,6 @@ disable_rmp()
 add_vf()
 {
 	echo 2 > /sys/class/net/$PF1/device/sriov_numvfs
-python2 /usr/bin/mlx_fs_dump -d 0000:08:00.0 > /root/net-next/fdb.txt
 }
 del_vf()
 {
@@ -242,10 +244,10 @@ test_no_rmp_sf()
 # udev file /etc/udev/rules.d/83-mlnx-sf-name.rules
 # ethtool -g eth2
 
-make -j12 -C . M=drivers/net/ethernet/mellanox/mlx5/core/
-#make -j12 -C . M=drivers/infiniband/hw/mlx5
+make -j8 -C . M=drivers/net/ethernet/mellanox/mlx5/core/
 set +e
 rmmod mlx5_ib
+rmmod mlx5_vdpa
 rmmod mlx5_core
 #insmode drivers/infiniband/hw/mlx5/mlx5_ib.ko
 insmod drivers/net/ethernet/mellanox/mlx5/core/mlx5_core.ko
@@ -253,9 +255,14 @@ insmod drivers/net/ethernet/mellanox/mlx5/core/mlx5_core.ko
 #insmod /root/mlx5_core.ko; echo "LOADING Default MLX5"
 devlink dev param set pci/0000:08:00.0 name flow_steering_mode value dmfs cmode runtime
 devlink dev eswitch set pci/0000:08:00.0 mode switchdev
+exit
+#python2 /usr/bin/mlx_fs_dump -d 0000:08:00.0 > /root/net-next/fdb.txt
+setup_ovs
+
+exit
 #ethtool -K eth2 ntuple on
 #echo 4 > /sys/class/net/eth2/device/sriov_numvfs
-#python2 /usr/bin/mlx_fs_dump -d 0000:08:00.0 > /root/net-next/fdb.txt
+# ovs-vsctl get Open_vSwitch . other_config:hw-offload
 
 #test_no_rmp_sf
 #exit
