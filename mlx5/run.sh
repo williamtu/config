@@ -256,7 +256,7 @@ insmod drivers/net/ethernet/mellanox/mlx5/core/mlx5_core.ko
 devlink dev param set pci/0000:08:00.0 name flow_steering_mode value dmfs cmode runtime
 devlink dev eswitch set pci/0000:08:00.0 mode switchdev
 exit
-#python2 /usr/bin/mlx_fs_dump -d 0000:08:00.0 > /root/net-next/fdb.txt
+python2 /usr/bin/mlx_fs_dump -d 0000:08:00.0 > /root/net-next/fdb.txt
 setup_ovs
 
 exit
